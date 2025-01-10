@@ -1,117 +1,212 @@
-<%-- 
-    Document   : index
-    Created on : 31 Dec 2024, 5:13:35?am
-    Author     : umaml
---%>
+<%@ page import="java.sql.*" %>
+<%
+    Integer userId = (Integer) session.getAttribute("userId");
+    String username = (String) session.getAttribute("username");
+    String role = (String) session.getAttribute("role");
 
-<%@ page import="java.util.*" %>
+    if (userId == null) {
+        response.sendRedirect("login.jsp");
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Recommender</title>
+    <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #121212;
+            background-color: #1c1c1e;
             color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         .container {
-            margin-top: 100px;
-            background-color: #1e1e1e;
-            border-radius: 15px;
-            padding: 20px;
+            margin-top: 80px;
+            flex: 1; /* jangan diubah, buat auto grow main konten */
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #292929;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header .logo-title {
+            display: flex;
+            align-items: center;
+        }
+        .header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-right: 10px;
+        }
+        .header .title {
+            font-size: 20px;
+            color: #ffffff;
+        }
+        .header .logout-btn {
+            background-color: #d9534f;
+            border: none;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .header .logout-btn:hover {
+            background-color: #c9302c;
+            text-decoration: none;
         }
         .card {
             background-color: #292929;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
         }
-        .card h4 {
-            color: #f1f1f1;
+        .card:hover {
+            transform: translateY(-5px);
         }
-        .card p {
-            color: #b0b0b0;
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
         }
         .btn {
-            border-radius: 5px;
-            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
         }
         .btn-primary {
-            background-color: #6200ea;
-            border-color: #6200ea;
+            background-color: #4caf50;
+            border: none;
         }
         .btn-primary:hover {
-            background-color: #3700b3;
-            border-color: #3700b3;
+            background-color: #45a049;
         }
         .btn-secondary {
-            background-color: #03dac5;
-            border-color: #03dac5;
+            background-color: #5a5a5a;
+            border: none;
         }
         .btn-secondary:hover {
-            background-color: #018786;
-            border-color: #018786;
+            background-color: #4e4e4e;
         }
-        .btn-success {
-            background-color: #388e3c;
-            border-color: #388e3c;
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
         }
-        .btn-success:hover {
-            background-color: #2c6c2f;
-            border-color: #2c6c2f;
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
         }
-        .btn-danger {
-            background-color: #d32f2f;
-            border-color: #d32f2f;
+        
+        .footer {
+            background-color: #000; 
+            color: #fff; 
+            padding: 40px 0; 
+            text-align: center;
         }
-        .btn-danger:hover {
-            background-color: #9a0007;
-            border-color: #9a0007;
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-section .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .logo-section p {
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+        .links-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px; 
+        }
+        .links-section a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .links-section a:ahover {
+            text-decoration: underline;
+        }
+        .divider {
+            width: 80%;
+            border-top: 1px solid #fff; 
+            margin: 20px 0; 
+        }
+        .copyright-section {
+            margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center mb-5">Welcome to Movie Recommender</h1>
-        
-        <div class="row justify-content-center">
-            <%
-                // Check if the user is logged in
-                Integer userId = (Integer) session.getAttribute("userId");
-                String username = (String) session.getAttribute("username");
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-title">
+            <div class="logo">LOGO</div>
+            <div class="title">Movie Recommender</div>
+        </div>
+        <a href="logout.jsp" class="logout-btn">Logout</a>
+    </header>
 
-                if (userId != null) {
-            %>
-            <!-- User is logged in -->
-            <div class="col-md-4">
-                <div class="card text-center p-4">
-                    <h4>Hi, <%= username %>!</h4>
-                    <p>Choose an option below:</p>
-                    <a href="recommend.jsp" class="btn btn-primary btn-block mb-3">Get Recommendations</a>
-                    <a href="watch_history.jsp" class="btn btn-secondary btn-block mb-3">View Watch History</a>
-                    <a href="movies.jsp" class="btn btn-success btn-block mb-3">Manage Movies</a>
-                    <a href="logout.jsp" class="btn btn-danger btn-block">Logout</a>
-                </div>
-            </div>
-            <%
-                } else {
-            %>
-            <!-- User is not logged in -->
-            <div class="col-md-4">
-                <div class="card text-center p-4">
-                    <h4>Start Your Journey</h4>
-                    <p>Log in to explore personalized recommendations and movie history.</p>
-                    <a href="login.jsp" class="btn btn-primary btn-block">Login</a>
-                </div>
-            </div>
-            <%
-                }
-            %>
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Welcome <%= username %></h1>
+        <div class="action-buttons">
+            <% if ("admin".equals(role)) { %>
+                <a href="movies_admin.jsp" class="btn btn-primary btn-lg">Manage Movies</a>
+            <% } else { %>
+                <a href="movies_user.jsp" class="btn btn-primary btn-lg">Browse Movies</a>
+                <a href="watch_history.jsp" class="btn btn-secondary btn-lg">View Watch List</a>
+                <a href="recommend.jsp" class="btn btn-success btn-lg">Get Recommendations</a>
+            <% } %>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="logo-section">
+                <div class="logo">LOGO</div>
+                <p>EXPLORE YOUR MOVIES TASTE</p>
+            </div>
+            <div class="divider"></div>
+            <div class="links-section">
+                <a href="#">Weebly Themes</a>
+                <a href="#">Pre-Sale FAQs</a>
+                <a href="#">Submit a Ticket</a>
+                <a href="#">Services</a>
+                <a href="#">Theme Tweak</a>
+                <a href="#">Showcase</a>
+                <a href="#">Widgetkit</a>
+                <a href="#">Support</a>
+                <a href="#">About Us</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Affiliates</a>
+                <a href="#">Resources</a>
+            </div>
+            <div class="copyright-section">
+                <p>©Copyright. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

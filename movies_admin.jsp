@@ -1,9 +1,3 @@
-<%-- 
-    Document   : movies_admin
-    Created on : 31 Dec 2024, 12:44:31?pm
-    Author     : umaml
---%>
-
 <%@ page import="java.sql.*" %>
 <%@ page import="java.util.*" %>
 <%
@@ -54,12 +48,18 @@
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
+            width: 100%;
+        }
+        .form-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center">Admin - Manage Movies</h1>
+        <h1 class="text-center">Manage Movies Section</h1>
 
         <%
             Connection conn = null;
@@ -130,54 +130,29 @@
         %>
 
         <!-- Add/Edit Movie Form -->
-        <% if (movieToEdit != null && movieToEdit.next()) { %>
         <form method="POST" action="movies_admin.jsp" class="mb-4">
-            <input type="hidden" name="id" value="<%= movieToEdit.getInt("id") %>">
-            <div class="row">
-                <div class="col-md-3">
-                    <input type="text" name="title" placeholder="Enter Movie Title" value="<%= movieToEdit.getString("title") %>" required>
+            <% if (movieToEdit != null && movieToEdit.next()) { %>
+                <input type="hidden" name="id" value="<%= movieToEdit.getInt("id") %>">
+                <input type="text" name="title" placeholder="Enter Movie Title" value="<%= movieToEdit.getString("title") %>" required>
+                <input type="text" name="genre" placeholder="Enter Genre (comma-separated)" value="<%= movieToEdit.getString("genre") %>" required>
+                <input type="number" name="duration" placeholder="Duration (mins)" value="<%= movieToEdit.getInt("duration") %>" required>
+                <input type="text" name="poster_url" placeholder="Enter Poster URL" value="<%= movieToEdit.getString("poster_url") %>" required>
+                <textarea name="synopsis" placeholder="Enter Synopsis" rows="3" required><%= movieToEdit.getString("synopsis") %></textarea>
+                <div class="form-buttons">
+                    <button type="submit" name="action" value="edit" class="btn btn-warning">Save Changes</button>
                 </div>
-                <div class="col-md-3">
-                    <input type="text" name="genre" placeholder="Enter Genre (comma-separated)" value="<%= movieToEdit.getString("genre") %>" required>
+                
+            <% } else { %>
+                <input type="text" name="title" placeholder="Enter Movie Title" required>
+                <input type="text" name="genre" placeholder="Enter Genre (comma-separated)" required>
+                <input type="number" name="duration" placeholder="Duration (mins)" required>
+                <input type="text" name="poster_url" placeholder="Enter Poster URL" required>
+                <textarea name="synopsis" placeholder="Enter Synopsis" rows="3" required></textarea>
+                <div class="form-buttons">
+                    <button type="submit" name="action" value="add" class="btn btn-primary">Add Movie</button>
                 </div>
-                <div class="col-md-2">
-                    <input type="number" name="duration" placeholder="Duration (mins)" value="<%= movieToEdit.getInt("duration") %>" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" name="poster_url" placeholder="Enter Poster URL" value="<%= movieToEdit.getString("poster_url") %>" required>
-                </div>
-                <div class="col-md-6 mt-2">
-                    <textarea name="synopsis" placeholder="Enter Synopsis" rows="2" required><%= movieToEdit.getString("synopsis") %></textarea>
-                </div>
-                <div class="col-md-2 mt-2">
-                    <button type="submit" name="action" value="edit" class="btn btn-warning w-100">Save Changes</button>
-                </div>
-            </div>
+            <% } %>
         </form>
-        <% } else { %>
-        <form method="POST" action="movies_admin.jsp" class="mb-4">
-            <div class="row">
-                <div class="col-md-3">
-                    <input type="text" name="title" placeholder="Enter Movie Title" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" name="genre" placeholder="Enter Genre (comma-separated)" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" name="duration" placeholder="Duration (mins)" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" name="poster_url" placeholder="Enter Poster URL" required>
-                </div>
-                <div class="col-md-6 mt-2">
-                    <textarea name="synopsis" placeholder="Enter Synopsis" rows="2" required></textarea>
-                </div>
-                <div class="col-md-2 mt-2">
-                    <button type="submit" name="action" value="add" class="btn btn-primary w-100">Add Movie</button>
-                </div>
-            </div>
-        </form>
-        <% } %>
 
         <!-- Movie List -->
         <div class="row">

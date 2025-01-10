@@ -1,9 +1,3 @@
-<%-- 
-    Document   : watch_history
-    Created on : 31 Dec 2024, 5:06:53?am
-    Author     : umaml
---%>
-
 <%@ page import="java.sql.*" %>
 <%@ page import="classes.JDBC" %>
 <!DOCTYPE html>
@@ -20,7 +14,7 @@
             font-family: Arial, sans-serif;
         }
         h1 {
-            color: #f5c518; /* IMDb yellow */
+            color: #f5c518; 
             font-weight: bold;
         }
         .card {
@@ -45,6 +39,13 @@
         .btn-primary:hover {
             background-color: #e4b50e;
         }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
         .container {
             margin-top: 50px;
         }
@@ -55,38 +56,56 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center">User Watch History</h1>
+        <h1 class="text-center">Watch History</h1>
         <div class="row mt-4">
             <%
+                
+                Integer userId = (Integer) session.getAttribute("userId");
+                if (userId == null) {
+                    response.sendRedirect("login.jsp");
+                    return;
+                }
+
                 JDBC db = new JDBC();
                 if (db.isConnected) {
                     try {
-                        // Replace '1' with dynamic user ID if needed
                         String query = "SELECT u.username AS user_name, m.title AS movie_title, m.genre AS movie_genre, " +
-                                       "m.duration AS movie_duration, m.synopsis AS movie_synopsis, m.poster_url AS movie_poster, uwh.watched_at AS watched_date " +
+                                       "m.duration AS movie_duration, m.synopsis AS movie_synopsis, m.poster_url AS movie_poster, uwh.movie_id AS movie_id, uwh.watched_at AS watched_date " +
                                        "FROM user_watch_history uwh " +
                                        "JOIN users u ON uwh.user_id = u.id " +
                                        "JOIN movies m ON uwh.movie_id = m.id " +
                                        "WHERE u.id = ? ORDER BY uwh.watched_at DESC";
                         PreparedStatement ps = db.conn.prepareStatement(query);
-                        ps.setInt(1, 1); // Replace with dynamic user ID from session
+                        ps.setInt(1, userId);
                         ResultSet rs = ps.executeQuery();
 
+                        boolean hasMovies = false;
                         while (rs.next()) {
+                            hasMovies = true;
             %>
             <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="<%= rs.getString("movie_poster") %>" class="card-img-top movie-poster" alt="<%= rs.getString("movie_title") %>">
-                    <div class="card-body">
-                        <h5 class="card-title"><%= rs.getString("movie_title") %></h5>
-                        <p class="card-text"><%= rs.getString("movie_synopsis") %></p>
-                        <p><strong>Genre:</strong> <%= rs.getString("movie_genre") %></p>
-                        <p><strong>Duration:</strong> <%= rs.getInt("movie_duration") %> mins</p>
-                        <p><strong>Watched Date:</strong> <%= rs.getTimestamp("watched_date") %></p>
-                    </div>
-                </div>
+        <div class="card h-100">
+            <a href="moviereview.jsp?movieId=<%= rs.getInt("movie_id") %>" class="text-decoration-none">
+                <img src="<%= rs.getString("movie_poster") %>" class="card-img-top movie-poster" alt="<%= rs.getString("movie_title") %>">
+            </a>
+            <div class="card-body">
+                <h5 class="card-title"><%= rs.getString("movie_title") %></h5>
+                <p class="card-text"><%= rs.getString("movie_synopsis") %></p>
+                <p><strong>Genre:</strong> <%= rs.getString("movie_genre") %></p>
+                <p><strong>Duration:</strong> <%= rs.getInt("movie_duration") %> mins</p>
+                <p><strong>Added On:</strong> <%= rs.getTimestamp("watched_date") %></p>
+                <form method="POST" action="watchlist" class="mt-2">
+                    <input type="hidden" name="movie_id" value="<%= rs.getInt("movie_id") %>">
+                    <input type="hidden" name="action" value="remove">
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
             </div>
+        </div>
+    </div>
             <%
+                        }
+                        if (!hasMovies) {
+                            out.println("<div class='text-center text-warning mt-4'>Your watchlist is empty.</div>");
                         }
                     } catch (Exception e) {
                         out.println("<div class='text-danger'>Error: " + e.getMessage() + "</div>");
