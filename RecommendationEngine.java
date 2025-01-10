@@ -30,7 +30,7 @@ public class RecommendationEngine {
                 SELECT movie_id FROM user_watch_history WHERE user_id = ?
             )
             ORDER BY RAND()
-            LIMIT 5
+            LIMIT 3
         """;
 
         try (PreparedStatement ps = conn.prepareStatement(query)) {
